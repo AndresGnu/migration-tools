@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "module": "CommonJS",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "ESNext",
+    "noImplicitAny": true,
+    "moduleResolution": "node",
+    "outDir": "dist",
+    "baseUrl": ".",
+    "resolveJsonModule": true,
+    "strict": false,
+    "skipLibCheck": true
+  },
+  "include": ["migrations/**/*"],
+  "exclude": ["node_modules", "**/*.spec.ts"]
+}

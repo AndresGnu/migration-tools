@@ -1,4 +1,8 @@
-import { MigrationBuilder, CreateSchemaOptions } from 'node-pg-migrate';
+import {
+  MigrationBuilder,
+  CreateSchemaOptions,
+  DropOptions,
+} from 'node-pg-migrate';
 import { DefineTable } from './tables';
 import { DefineFunction } from './functions';
 import { DefineType } from './types';
@@ -51,14 +55,16 @@ const useSchema = (schema: string, state: StateSchemas) => {
           action.method.$down(pgm);
         }
       });
-      pgm.dropSchema(schema);
+      if (schema !== 'public') {
+        pgm.dropSchema(schema);
+      }
     },
   };
 };
 
 export const createSchemas = (
   nameSchema: string,
-  options: CreateSchemaOptions,
+  options?: CreateSchemaOptions & DropOptions,
 ) => {
   // pgm.createSchema(nameSchema, {
   //   ...options,
@@ -78,11 +84,14 @@ export const createSchemas = (
       const schemas = useSchema(nameSchema, states[index]);
       schemas.up(pgm);
       // Reset actions
-      states[index].actions = [];
       index += 1;
     },
     $down: (pgm: MigrationBuilder) => {
       //
+      const schemas = useSchema(nameSchema, states[index]);
+      schemas.down(pgm);
+      // Reset actions
+      index -= 0;
     },
     table: (theTable: ReturnType<DefineTable>) => {
       states[index].actions.push({

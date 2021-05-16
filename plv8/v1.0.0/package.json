@@ -1,7 +1,7 @@
 {
-  "name": "@redware/migration-utils",
+  "name": "@redware/migration-plv8",
   "version": "1.0.0",
-  "description": "Js utils for node.js",
+  "description": "Utils for plv8",
   "author": "Andres Navarrete",
   "license": "MIT",
   "main": "dist/index",

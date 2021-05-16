@@ -40,7 +40,9 @@ const useSchema = (schema, state) => {
                     action.method.$down(pgm);
                 }
             });
-            pgm.dropSchema(schema);
+            if (schema !== 'public') {
+                pgm.dropSchema(schema);
+            }
         },
     };
 };
@@ -63,11 +65,14 @@ const createSchemas = (nameSchema, options) => {
             const schemas = useSchema(nameSchema, states[index]);
             schemas.up(pgm);
             // Reset actions
-            states[index].actions = [];
             index += 1;
         },
         $down: (pgm) => {
             //
+            const schemas = useSchema(nameSchema, states[index]);
+            schemas.down(pgm);
+            // Reset actions
+            index -= 0;
         },
         table: (theTable) => {
             states[index].actions.push({
