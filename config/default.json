@@ -1,0 +1,10 @@
+{
+  "db": {
+    "user": "monkey",
+    "password": "monkey2018",
+    "host": "localhost",
+    "port": 5432,
+    "database": "regulus"
+  },
+  "tsconfig": "../tsconfig.ts"
+}

@@ -1,0 +1,35 @@
+{
+  "name": "root",
+  "private": true,
+  "workspaces": [
+    "./packages/*",
+    "./database",
+    "./tests"
+  ],
+  "scripts": {
+    "migrate": "ts-node node_modules/.bin/node-pg-migrate -j ts",
+    "utils": "yarn workspace @redware/migration-utils",
+    "db": "yarn workspace @database/tests"
+  },
+  "devDependencies": {
+    "lerna": "^4.0.0",
+    "@types/jest": "^26.0.13",
+    "@types/node": "^14.10.1",
+    "@types/pluralize": "^0.0.29",
+    "@typescript-eslint/eslint-plugin": "^4.23.0",
+    "@typescript-eslint/parser": "^4.23.0",
+    "eslint": "^7.26.0",
+    "jest": "^26.6.2",
+    "prettier": "^2.3.0",
+    "ts-jest": "^26.5.0",
+    "ts-node": "^9.1.0",
+    "ttypescript": "^1.5.12",
+    "typescript": "^4.2.4",
+    "typescript-transform-paths": "^2.2.3"
+  },
+  "dependencies": {
+    "esno": "^0.5.0",
+    "node-pg-migrate": "^5.9.0",
+    "pg": "^8.6.0"
+  }
+}

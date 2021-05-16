@@ -1,0 +1,25 @@
+{
+  "name": "@database/v1",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Base migrations",
+  "author": "Andres Navarrete",
+  "license": "MIT",
+  "main": "dist/index",
+  "types": "dist/index",
+  "files": [
+    "dist/",
+    "types/"
+  ],
+  "scripts": {
+    "build:lib": "ttsc -p tsconfig.build.json",
+    "watch": "ttsc -p tsconfig.build.json -w",
+    "test": "jest",
+    "prepare": "yarn build:ts"
+  },
+  "devDependencies": {},
+  "dependencies": {
+    "node-pg-migrate": "^5.9.0"
+  },
+  "gitHead": "de80888141a1a22b4f3b67531033b3da6f56e740"
+}
