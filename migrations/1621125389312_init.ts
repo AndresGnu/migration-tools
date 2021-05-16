@@ -1,10 +1,10 @@
 import { MigrationBuilder, ColumnDefinitions } from 'node-pg-migrate';
-import publicSchema from '@database/v1/schemas/public';
+import publicSchema from '@database/v1.0.0/schemas/public';
 import {
   enum_crud,
   enum_sign,
   enum_way_to_pay,
-} from '@database/v1/schemas/public/types';
+} from '@database/v1.0.0/schemas/public/types';
 
 export const shorthands: ColumnDefinitions | undefined = undefined;
 

@@ -1,5 +1,5 @@
 {
-  "name": "@redware/migration-plv8",
+  "name": "@plv8/v1.1.1",
   "version": "1.0.0",
   "description": "Utils for plv8",
   "author": "Andres Navarrete",
