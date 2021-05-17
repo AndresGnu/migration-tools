@@ -8,7 +8,6 @@ import {
 
 export const shorthands: ColumnDefinitions | undefined = undefined;
 
-// publicSchema.function(concat_full_text_search);
 publicSchema.type(enum_crud);
 publicSchema.type(enum_way_to_pay);
 publicSchema.type(enum_sign);
