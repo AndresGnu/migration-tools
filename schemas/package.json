@@ -1,5 +1,5 @@
 {
-  "name": "@database/v1.0.0",
+  "name": "@db/schemas",
   "private": true,
   "version": "1.0.0",
   "description": "Base migrations",

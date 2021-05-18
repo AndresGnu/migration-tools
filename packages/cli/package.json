@@ -1,0 +1,43 @@
+{
+  "name": "@redware/migrations-cli",
+  "version": "1.0.0",
+  "description": "Cli for migrations",
+  "author": "Andres Navarrete",
+  "license": "MIT",
+  "bin": {
+    "rmigrate": "index.js"
+  },
+  "main": "index.js",
+  "types": "types/index.d.ts",
+  "files": [
+    "*/**",
+    "cli.js"
+  ],
+  "dependencies": {
+    "archiver": "^5.3.0",
+    "arg": "^5.0.0",
+    "boxen": "^5.0.1",
+    "chalk": "^4.1.1",
+    "commander": "^7.2.0",
+    "consola": "^2.15.3",
+    "esm": "^3.2.25",
+    "execa": "^5.0.0",
+    "figlet": "^1.5.0",
+    "fs-extra": "^9.1.0",
+    "gifsicle": "^5.2.0",
+    "inquirer": "^8.0.0",
+    "listr": "^0.14.3",
+    "ora": "^5.4.0"
+  },
+  "devDependencies": {
+    "@types/archiver": "^5.1.0",
+    "@types/figlet": "^1.5.1",
+    "@types/inquirer": "^7.3.1",
+    "@types/listr": "^0.14.3"
+  },
+  "scripts": {
+    "test": "jest",
+    "preinstall": "rm -rf ./node_modules/.cache"
+  },
+  "gitHead": "3e2da40e6dbc15180f184e9b48f0895aba0e0e9c"
+}

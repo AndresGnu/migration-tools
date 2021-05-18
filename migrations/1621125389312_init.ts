@@ -1,21 +1,26 @@
 import { MigrationBuilder, ColumnDefinitions } from 'node-pg-migrate';
-import publicSchema from '@database/v1.0.0/schemas/public';
+// * Importaciones
+import publicSchema from '@db/schemas/v1.0.0/public';
 import {
   enum_crud,
   enum_sign,
   enum_way_to_pay,
-} from '@database/v1.0.0/schemas/public/types';
+} from '@db/schemas/v1.0.0/public/types';
 
+// * Defintitions
+
+const Public = publicSchema();
+Public.type(enum_crud);
+Public.type(enum_way_to_pay);
+Public.type(enum_sign);
+
+// * Actions to migrate
 export const shorthands: ColumnDefinitions | undefined = undefined;
 
-publicSchema.type(enum_crud);
-publicSchema.type(enum_way_to_pay);
-publicSchema.type(enum_sign);
-
 export async function up(pgm: MigrationBuilder): Promise<void> {
-  publicSchema.$up(pgm);
+  Public.$up(pgm);
 }
 
 export async function down(pgm: MigrationBuilder): Promise<void> {
-  publicSchema.$down(pgm);
+  Public.$down(pgm);
 }

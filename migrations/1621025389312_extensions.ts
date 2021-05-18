@@ -1,16 +1,12 @@
-import { MigrationBuilder, ColumnDefinitions } from 'node-pg-migrate';
+import { MigrationBuilder } from 'node-pg-migrate';
+import createExtensions from '@db/extensions/v1.0.0';
+
+const extensions = createExtensions();
 
 export async function up(pgm: MigrationBuilder): Promise<void> {
-  pgm.createExtension('uuid-ossp', {
-    ifNotExists: true,
-  });
-  pgm.createExtension('ltree', { ifNotExists: true });
-  pgm.createExtension('unaccent', { ifNotExists: true });
-  pgm.createExtension('plv8', {
-    ifNotExists: true,
-  });
+  extensions.$up(pgm);
 }
 
 export async function down(pgm: MigrationBuilder): Promise<void> {
-  // publicSchema.$down(pgm);
+  extensions.$down(pgm);
 }

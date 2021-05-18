@@ -1,6 +1,6 @@
 import { TableObject } from '@redware/migration-utils';
 import { ColumnDefinitions, PgType } from 'node-pg-migrate';
-import textSearch from '@database/v1/schemas/public/functions/concat_full_text_search';
+import textSearch from '../../../public/functions/concat_full_text_search';
 
 const _: TableObject['columns'] = ({ $types, pgm }) => {
   const primitives: ColumnDefinitions = {

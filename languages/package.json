@@ -1,0 +1,27 @@
+{
+  "name": "@db/languages",
+  "version": "1.0.0",
+  "description": "Utils for plv8",
+  "author": "Andres Navarrete",
+  "license": "MIT",
+  "main": "dist/index",
+  "types": "dist/index",
+  "files": [
+    "dist/",
+    "types/"
+  ],
+  "scripts": {
+    "build:lib": "ttsc -p tsconfig.build.json",
+    "watch": "ttsc -p tsconfig.build.json -w",
+    "test": "jest",
+    "prepare": "yarn build:ts"
+  },
+  "devDependencies": {
+    "@types/ramda": "^0.27.40"
+  },
+  "dependencies": {
+    "node-pg-migrate": "^5.9.0",
+    "ramda": "^0.27.1"
+  },
+  "gitHead": "de80888141a1a22b4f3b67531033b3da6f56e740"
+}

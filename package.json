@@ -3,9 +3,10 @@
   "private": true,
   "workspaces": [
     "./packages/*",
-    "./versions/*",
-    "./plv8/*",
-    "./types"
+    "./languages",
+    "./extensions",
+    "./schemas",
+    "./@types"
   ],
   "scripts": {
     "migrate2": "ts-node node_modules/.bin/node-pg-migrate -j ts",
