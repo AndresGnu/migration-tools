@@ -1,9 +1,7 @@
 import { ContextFunction, getDefinition } from '@redware/migration-plv8';
-import fs from 'fs';
-interface Args {
+export interface Args {
   texts: string[];
 }
-console.log(__filename);
 
 const run = ({ ARGS }: ContextFunction<Args>): string => {
   const { texts } = ARGS;
@@ -16,8 +14,6 @@ const run = ({ ARGS }: ContextFunction<Args>): string => {
   return text;
   //@END
 };
-const t = fs.readFileSync(__filename, 'utf8');
-console.log(t);
 
 export default {
   run,
