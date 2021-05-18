@@ -1,16 +1,18 @@
 {
-  "extends": "../tsconfig.build.json",
   "compilerOptions": {
-    "baseUrl": "./",
+    "target": "ES6",
+    "module": "commonjs",
+    "lib": ["es6"],
+    "esModuleInterop": true,
+    "strict": true,
+    "noImplicitAny": true,
+    "moduleResolution": "node",
+    "declaration": true,
+    "experimentalDecorators": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
     "outDir": "./dist",
-    "sourceMap": false,
-    "paths": {
-      "types": ["./types/index.d.ts"]
-    },
-    "plugins": [
-      { "transform": "typescript-transform-paths" },
-      { "transform": "typescript-transform-paths", "afterDeclarations": true }
-    ]
+    "sourceMap": false
   },
-  "include": ["src/**/*"]
+  "exclude": ["test"]
 }

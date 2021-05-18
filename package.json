@@ -12,7 +12,8 @@
     "migrate2": "ts-node node_modules/.bin/node-pg-migrate -j ts",
     "migrate": "esno node_modules/.bin/node-pg-migrate -j ts",
     "utils": "yarn workspace @redware/migration-utils",
-    "db": "yarn workspace @database/tests"
+    "lang": "yarn workspace @db/languages",
+    "plv8": "yarn workspace @redware/migration-plv8"
   },
   "devDependencies": {
     "lerna": "^4.0.0",

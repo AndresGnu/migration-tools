@@ -1,4 +1,6 @@
 import { PLV8 } from 'types';
+import path from 'path';
+import fs from 'fs';
 export { ContextFunction, ContextTriggeFun } from 'types';
 interface StatePlv8 {
   functions: Record<string, any>;
@@ -80,4 +82,16 @@ export const createPlv8 = (): PLV8 => {
       state.functions[name] = () => data;
     },
   } as any;
+};
+
+export const getDefinition = (fileName: string) => {
+  const file = fs.readFileSync(fileName, 'utf8');
+  const re = /@INIT([^@]+)?@/g;
+  const match = re.exec(file);
+  // return match[1].trim();
+  if (!match) throw new Error(`Incorrect definition: ${fileName}`);
+  return {
+    name: path.basename(fileName).replace(/(\.js|\.ts)/g, ''),
+    definition: match[1].trim(),
+  };
 };
