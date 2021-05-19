@@ -1,8 +1,9 @@
 import {
   MigrationBuilder,
   ColumnDefinitions,
-  CreateIndex,
   Name,
+  PgType,
+  ColumnDefinition,
 } from 'node-pg-migrate';
 import {
   CallbackTable,
@@ -29,7 +30,7 @@ type CallbackPolicies = CallbackTable<TablePolicies | TablePolicies[]>;
 export interface TableObject {
   name: string;
   columns?: ColumnDefinitions | CallbackColumns;
-  constrains?: TableConstrains | TableConstrains | CallbackConstrains;
+  constrains?: TableConstrains | TableConstrains[] | CallbackConstrains;
   indexes?: TableIndexes | TableIndexes[] | CallbackIndexes;
   policies?: TablePolicies | TablePolicies[] | CallbackPolicies;
   triggers?: TableTrigges | TableTrigges[] | CallbackTriggers;
@@ -143,6 +144,16 @@ const useIndexes = (tableName: Name, items: CallbackIndexes[]) => {
 };
 
 const useColumns = (tableName: Name, _columns: CallbackColumns[]) => {
+  const _parseColumns = (myColumns: unknown) =>
+    R.mapObjIndexed((v, n) => {
+      if (v.referencesConstraintComment) {
+        v.referencesConstraintName = `${(tableName as any).name}_fk_${n}`;
+      }
+      return {
+        ...v,
+      };
+    }, myColumns as Record<string, ColumnDefinition>);
+
   const getColumns = (pgm: MigrationBuilder) => {
     const contextColumns = {
       ...useHelperColumns(pgm),
@@ -155,11 +166,16 @@ const useColumns = (tableName: Name, _columns: CallbackColumns[]) => {
     return columns;
   };
   return {
+    _parseColumns,
     _getColumns: getColumns,
     up: (pgm: MigrationBuilder) => {
       const columns = getColumns(pgm);
       columns.forEach((column) => {
-        pgm.addColumns(tableName, column.columns, column.options);
+        pgm.addColumns(
+          tableName,
+          _parseColumns(column.columns),
+          column.options,
+        );
       });
     },
     down: (pgm: MigrationBuilder) => {
@@ -178,16 +194,21 @@ const useTable = (options: TableInternalObject, state: TableState) => {
   const table = (pgm: MigrationBuilder) => {
     return {
       up: () => {
-        const columns = useColumns(tableName, [options.columns])
-          ._getColumns(pgm)
-          .reduce((prev, current) => {
-            return {
-              ...prev,
-              ...current.columns,
-            };
-          }, {} as ColumnDefinitions);
+        const { _parseColumns, _getColumns } = useColumns(tableName, [
+          options.columns,
+        ]);
+        const columns = _getColumns(pgm).reduce((prev, current) => {
+          return {
+            ...prev,
+            ...current.columns,
+          };
+        }, {} as ColumnDefinitions);
 
-        pgm.createTable(tableName, columns, state.options.create);
+        pgm.createTable(
+          tableName,
+          _parseColumns(columns),
+          state.options.create,
+        );
       },
       down: () => {
         pgm.dropTable(tableName, state.options.drop);
@@ -218,9 +239,6 @@ const useTable = (options: TableInternalObject, state: TableState) => {
   return {
     up: (pgm: MigrationBuilder) => {
       table(pgm).up();
-      /**
-       * Extra options
-       */
       state.actions[state.index].forEach((action) => {
         if (action.type === 'columns') {
           useColumns(tableName, [action.method]).up(pgm);
@@ -229,15 +247,11 @@ const useTable = (options: TableInternalObject, state: TableState) => {
       });
     },
     down: (pgm: MigrationBuilder) => {
-      /**
-       * Extra options
-       */
-
       state.actions[state.index].reverse().forEach((action) => {
         if (action.type === 'columns') {
-          useColumns(tableName, [action.method]).up(pgm);
+          useColumns(tableName, [action.method]).down(pgm);
         }
-        call(pgm, action, 'up');
+        call(pgm, action, 'down');
       });
       table(pgm).down();
     },
@@ -248,8 +262,8 @@ export const defineTable = (options: TableObject) => {
   const _name = options.name;
   const state: TableState = {
     name: _name,
-    schema: 'plubic',
-    actions: [],
+    schema: 'public',
+    actions: [[]],
     options: {},
     index: 0,
   };
@@ -261,7 +275,6 @@ export const defineTable = (options: TableObject) => {
         : ((() => ({ columns: options.columns })) as CallbackColumns),
   };
 
-  const table = useTable(tableInit, state);
   const assignAction = (
     type: 'columns' | 'index' | 'constrain' | 'trigger' | 'policy',
     v: any,
@@ -289,6 +302,29 @@ export const defineTable = (options: TableObject) => {
 
   const methods = {
     _name,
+    _reference: (key = 'id'): ColumnDefinition => {
+      //
+      const ctx = useHelperColumns({ fun: () => '' } as any);
+      const tableColumns = tableInit.columns({
+        ...ctx,
+        pgm: {} as any,
+        schema: state.schema,
+      });
+      const columns = tableColumns.columns as Record<string, ColumnDefinition>;
+      const type = columns[key] ? columns[key].type : columns['code'].type;
+      return {
+        type:
+          type === PgType.BIGSERIAL
+            ? PgType.BIGINT
+            : type === PgType.SERIAL
+            ? PgType.INTEGER
+            : type,
+        references: {
+          name: options.name,
+          schema: state.schema,
+        },
+      };
+    },
     // _state: state,
     columns: (columns: TableColumns | CallbackColumns) => {
       assignAction('columns', columns);
@@ -314,10 +350,14 @@ export const defineTable = (options: TableObject) => {
      * Up table
      */
     $up: (pgm: MigrationBuilder) => {
+      const table = useTable(tableInit, state);
+
       table.up(pgm);
       state.index += 1;
     },
     $down: (pgm: MigrationBuilder) => {
+      const table = useTable(tableInit, state);
+
       table.down(pgm);
     },
     //Extra options

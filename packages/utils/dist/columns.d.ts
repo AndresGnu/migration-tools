@@ -1,13 +1,19 @@
 import { MigrationBuilder, ColumnDefinitions, ColumnDefinition } from 'node-pg-migrate';
 interface CodeNameOptions {
-    codePk: boolean;
-    lengthCode: number;
-    isNullName: boolean;
+    codePk?: boolean;
+    lengthCode?: number;
+    isNullName?: boolean;
 }
 export declare const useHelperColumns: (pgm: MigrationBuilder) => {
     $types: {
         character: (number?: number | undefined) => string;
         numeric: (presicion?: number | undefined, scale?: number | undefined) => string;
+    };
+    $comments: {
+        OmitManyToMany: () => string;
+        ForeignFieldName: (name: string) => string;
+        ManyToMany: (name: string) => string;
+        Polymorphic: (tables: string[]) => string;
     };
     $columns: {
         codeName: ({ lengthCode, codePk, isNullName, }: CodeNameOptions) => ColumnDefinitions;

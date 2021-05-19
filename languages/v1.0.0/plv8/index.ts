@@ -1,6 +1,6 @@
-import concat_pull_text_search from './functions/concat_pull_text_search';
+import concat_full_text_search from './functions/concat_full_text_search';
 const functions = {
-  concat_pull_text_search,
+  concat_full_text_search,
 };
 
 export default {

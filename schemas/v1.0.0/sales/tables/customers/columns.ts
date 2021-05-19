@@ -35,7 +35,7 @@ const _: TableObject['columns'] = ({ $types, pgm }) => {
       type: PgType.BOOLEAN,
       default: false,
     },
-    full_text: textSearch.columnType('path::TEXT', 'name'),
+    // full_text: textSearch.columnType('path::TEXT', 'name'),
   };
 
   return {

@@ -20,6 +20,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.defineTable = void 0;
+const node_pg_migrate_1 = require("node-pg-migrate");
 const columns_1 = require("./columns");
 const R = __importStar(require("ramda"));
 //*******Methors******* */
@@ -87,6 +88,14 @@ const useIndexes = (tableName, items) => {
     });
 };
 const useColumns = (tableName, _columns) => {
+    const _parseColumns = (myColumns) => R.mapObjIndexed((v, n) => {
+        if (v.referencesConstraintComment) {
+            v.referencesConstraintName = `${tableName.name}_fk_${n}`;
+        }
+        return {
+            ...v,
+        };
+    }, myColumns);
     const getColumns = (pgm) => {
         const contextColumns = {
             ...columns_1.useHelperColumns(pgm),
@@ -99,11 +108,12 @@ const useColumns = (tableName, _columns) => {
         return columns;
     };
     return {
+        _parseColumns,
         _getColumns: getColumns,
         up: (pgm) => {
             const columns = getColumns(pgm);
             columns.forEach((column) => {
-                pgm.addColumns(tableName, column.columns, column.options);
+                pgm.addColumns(tableName, _parseColumns(column.columns), column.options);
             });
         },
         down: (pgm) => {
@@ -120,15 +130,16 @@ const useTable = (options, state) => {
     const table = (pgm) => {
         return {
             up: () => {
-                const columns = useColumns(tableName, [options.columns])
-                    ._getColumns(pgm)
-                    .reduce((prev, current) => {
+                const { _parseColumns, _getColumns } = useColumns(tableName, [
+                    options.columns,
+                ]);
+                const columns = _getColumns(pgm).reduce((prev, current) => {
                     return {
                         ...prev,
                         ...current.columns,
                     };
                 }, {});
-                pgm.createTable(tableName, columns, state.options.create);
+                pgm.createTable(tableName, _parseColumns(columns), state.options.create);
             },
             down: () => {
                 pgm.dropTable(tableName, state.options.drop);
@@ -158,9 +169,6 @@ const useTable = (options, state) => {
     return {
         up: (pgm) => {
             table(pgm).up();
-            /**
-             * Extra options
-             */
             state.actions[state.index].forEach((action) => {
                 if (action.type === 'columns') {
                     useColumns(tableName, [action.method]).up(pgm);
@@ -169,14 +177,11 @@ const useTable = (options, state) => {
             });
         },
         down: (pgm) => {
-            /**
-             * Extra options
-             */
             state.actions[state.index].reverse().forEach((action) => {
                 if (action.type === 'columns') {
-                    useColumns(tableName, [action.method]).up(pgm);
+                    useColumns(tableName, [action.method]).down(pgm);
                 }
-                call(pgm, action, 'up');
+                call(pgm, action, 'down');
             });
             table(pgm).down();
         },
@@ -186,8 +191,8 @@ const defineTable = (options) => {
     const _name = options.name;
     const state = {
         name: _name,
-        schema: 'plubic',
-        actions: [],
+        schema: 'public',
+        actions: [[]],
         options: {},
         index: 0,
     };
@@ -197,7 +202,6 @@ const defineTable = (options) => {
             ? options.columns
             : (() => ({ columns: options.columns })),
     };
-    const table = useTable(tableInit, state);
     const assignAction = (type, v) => {
         if (!v) {
             return void 0;
@@ -222,6 +226,28 @@ const defineTable = (options) => {
     assignAction('policy', options.policies);
     const methods = {
         _name,
+        _reference: (key = 'id') => {
+            //
+            const ctx = columns_1.useHelperColumns({ fun: () => '' });
+            const tableColumns = tableInit.columns({
+                ...ctx,
+                pgm: {},
+                schema: state.schema,
+            });
+            const columns = tableColumns.columns;
+            const type = columns[key] ? columns[key].type : columns['code'].type;
+            return {
+                type: type === node_pg_migrate_1.PgType.BIGSERIAL
+                    ? node_pg_migrate_1.PgType.BIGINT
+                    : type === node_pg_migrate_1.PgType.SERIAL
+                        ? node_pg_migrate_1.PgType.INTEGER
+                        : type,
+                references: {
+                    name: options.name,
+                    schema: state.schema,
+                },
+            };
+        },
         // _state: state,
         columns: (columns) => {
             assignAction('columns', columns);
@@ -247,10 +273,12 @@ const defineTable = (options) => {
          * Up table
          */
         $up: (pgm) => {
+            const table = useTable(tableInit, state);
             table.up(pgm);
             state.index += 1;
         },
         $down: (pgm) => {
+            const table = useTable(tableInit, state);
             table.down(pgm);
         },
         //Extra options

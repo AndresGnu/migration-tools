@@ -10,6 +10,7 @@ export declare const defineType: (options: TypeOptions) => {
     $up: (pgm: MigrationBuilder) => void;
     $down: (pgm: MigrationBuilder) => void;
     schema: (schemaName: string) => void;
+    _name: string;
 };
 export declare type DefineType = typeof defineType;
 export {};

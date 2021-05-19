@@ -1,4 +1,8 @@
-import { MigrationBuilder, DropOptions } from 'node-pg-migrate';
+import {
+  MigrationBuilder,
+  DropOptions,
+  ColumnDefinition,
+} from 'node-pg-migrate';
 import { FunctionDefinition } from 'types';
 interface FunctionOptions<Params extends unknown[]> {
   name: string;
@@ -22,8 +26,8 @@ export const defineFunction = <P extends unknown[]>(
     name: options.name,
     schema: state.schema,
   };
-  return {
-    columnType: (...params: P) => {
+  const methods = {
+    _columnType: (...params: P) => {
       const _params = options?.columnType?.(...params);
       const nameFunction = `"${state.schema}"."${state.name}"`;
       if (_params) {
@@ -31,6 +35,12 @@ export const defineFunction = <P extends unknown[]>(
       } else {
         return `${nameFunction}(${params.join(',')})`;
       }
+    },
+    _expressionGenerated: (...params: P): ColumnDefinition => {
+      return {
+        type: options.function.options.returns!,
+        expressionGenerated: methods._columnType(...params),
+      };
     },
     schema: (schema: string) => {
       state.schema = schema;
@@ -51,6 +61,7 @@ export const defineFunction = <P extends unknown[]>(
       );
     },
   };
+  return methods;
 };
 
 export type DefineFunction = typeof defineFunction;

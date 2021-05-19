@@ -10,8 +10,8 @@ const defineFunction = (options) => {
         name: options.name,
         schema: state.schema,
     };
-    return {
-        columnType: (...params) => {
+    const methods = {
+        _columnType: (...params) => {
             const _params = options?.columnType?.(...params);
             const nameFunction = `"${state.schema}"."${state.name}"`;
             if (_params) {
@@ -20,6 +20,12 @@ const defineFunction = (options) => {
             else {
                 return `${nameFunction}(${params.join(',')})`;
             }
+        },
+        _expressionGenerated: (...params) => {
+            return {
+                type: options.function.options.returns,
+                expressionGenerated: methods._columnType(...params),
+            };
         },
         schema: (schema) => {
             state.schema = schema;
@@ -31,6 +37,7 @@ const defineFunction = (options) => {
             pgm.dropFunction(functionName, options.function.params, options.dropOptions);
         },
     };
+    return methods;
 };
 exports.defineFunction = defineFunction;
 // export

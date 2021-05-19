@@ -1,4 +1,4 @@
-import { MigrationBuilder, ColumnDefinitions } from 'node-pg-migrate';
+import { MigrationBuilder, ColumnDefinitions, ColumnDefinition } from 'node-pg-migrate';
 import { CallbackTable, TableIndexes, TableColumns, TableOptions, TableConstrains, TableTrigges, TablePolicies } from "../types/index";
 import type { HelperColumns } from "./columns";
 declare type CallbackColumns = CallbackTable<TableColumns, HelperColumns & {
@@ -12,7 +12,7 @@ declare type CallbackPolicies = CallbackTable<TablePolicies | TablePolicies[]>;
 export interface TableObject {
     name: string;
     columns?: ColumnDefinitions | CallbackColumns;
-    constrains?: TableConstrains | TableConstrains | CallbackConstrains;
+    constrains?: TableConstrains | TableConstrains[] | CallbackConstrains;
     indexes?: TableIndexes | TableIndexes[] | CallbackIndexes;
     policies?: TablePolicies | TablePolicies[] | CallbackPolicies;
     triggers?: TableTrigges | TableTrigges[] | CallbackTriggers;
@@ -42,6 +42,7 @@ export interface TableState {
 }
 export declare const defineTable: (options: TableObject) => {
     _name: string;
+    _reference: (key?: string) => ColumnDefinition;
     columns: (columns: TableColumns | CallbackColumns) => any;
     constrains: (constrains: TableObject['constrains']) => any;
     indexes: (indexes: TableObject['indexes']) => any;

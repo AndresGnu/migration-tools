@@ -5,7 +5,7 @@
   "author": "Andres Navarrete",
   "license": "MIT",
   "bin": {
-    "rmigrate": "index.js"
+    "mg": "index.js"
   },
   "main": "index.js",
   "types": "types/index.d.ts",
@@ -30,6 +30,7 @@
     "ora": "^5.4.0"
   },
   "devDependencies": {
+    "@types/fs-extra": "^9.0.11",
     "@types/archiver": "^5.1.0",
     "@types/figlet": "^1.5.1",
     "@types/inquirer": "^7.3.1",

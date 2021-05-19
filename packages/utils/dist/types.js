@@ -7,17 +7,21 @@ const defineType = (options) => {
         name: options.name,
         schema: 'public',
     };
+    const name = Array.isArray(options.type)
+        ? `enum_${options.name}`
+        : options.name;
     return {
         $up: (pgm) => {
             //
-            pgm.createType({ name: options.name, schema: state.schema }, options.type);
+            pgm.createType({ name: name, schema: state.schema }, options.type);
         },
         $down: (pgm) => {
-            pgm.dropType({ name: options.name, schema: state.schema }, options.dropOptions);
+            pgm.dropType({ name: name, schema: state.schema }, options.dropOptions);
         },
         schema: (schemaName) => {
             state.schema = schemaName;
         },
+        _name: name,
     };
 };
 exports.defineType = defineType;

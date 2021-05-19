@@ -1,15 +1,24 @@
 import { defineFunction } from '@redware/migration-utils';
 import { PgType } from 'node-pg-migrate';
-const fun = defineFunction({
-  name: __filename.replace('.ts', ''),
+import lang from '@db/languages';
+
+const { definition, name } = lang.v1_0_0.plv8.functions.concat_full_text_search;
+
+export const fun = defineFunction({
+  name,
   function: {
-    params: [],
+    params: [
+      {
+        type: `${PgType.TEXT}[]`,
+        name: 'texts',
+      },
+    ],
     options: {
       language: 'plv8',
       returns: PgType.TSVECTOR,
       behavior: 'IMMUTABLE',
     },
-    definition: '',
+    definition,
   },
   columnType: (...params) => {
     return `ARRAY[${params.join(',')}]`;

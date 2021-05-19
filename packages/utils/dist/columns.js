@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.useHelperColumns = void 0;
 const node_pg_migrate_1 = require("node-pg-migrate");
+const helpers_1 = require("./helpers/index");
 // export
 const useHelperColumns = (pgm) => {
     // Types
@@ -50,8 +51,20 @@ const useHelperColumns = (pgm) => {
         }
         return object;
     };
+    const $comments = {
+        OmitManyToMany: () => '@omit manyToMany',
+        ForeignFieldName: (name) => `@foreignFieldName ${name}`,
+        ManyToMany: (name) => `@manyToManyFieldName ${name}\n@manyToManySimpleFieldName ${name}List`,
+        Polymorphic: (tables) => {
+            const tp = tables
+                .map((t) => `@polymorphicTo ${helpers_1.parseTables(t)}`)
+                .join('\n');
+            return `@isPolymorphic\n${tp}`;
+        },
+    };
     return {
         $types: { character, numeric },
+        $comments,
         $columns: {
             codeName,
             idBigSerial,

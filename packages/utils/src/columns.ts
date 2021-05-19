@@ -4,11 +4,12 @@ import {
   ColumnDefinitions,
   ColumnDefinition,
 } from 'node-pg-migrate';
+import { parseTables } from './helpers';
 // Columns
 interface CodeNameOptions {
-  codePk: boolean;
-  lengthCode: number;
-  isNullName: boolean;
+  codePk?: boolean;
+  lengthCode?: number;
+  isNullName?: boolean;
 }
 
 // export
@@ -69,9 +70,22 @@ export const useHelperColumns = (pgm: MigrationBuilder) => {
     }
     return object;
   };
+  const $comments = {
+    OmitManyToMany: () => '@omit manyToMany',
+    ForeignFieldName: (name: string) => `@foreignFieldName ${name}`,
+    ManyToMany: (name: string) =>
+      `@manyToManyFieldName ${name}\n@manyToManySimpleFieldName ${name}List`,
+    Polymorphic: (tables: string[]) => {
+      const tp = tables
+        .map((t) => `@polymorphicTo ${parseTables(t)}`)
+        .join('\n');
+      return `@isPolymorphic\n${tp}`;
+    },
+  };
 
   return {
     $types: { character, numeric },
+    $comments,
     $columns: {
       codeName,
       idBigSerial,
