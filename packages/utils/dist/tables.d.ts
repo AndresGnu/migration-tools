@@ -1,6 +1,6 @@
 import { MigrationBuilder, ColumnDefinitions, ColumnDefinition } from 'node-pg-migrate';
 import { CallbackTable, TableIndexes, TableColumns, TableOptions, TableConstrains, TableTrigges, TablePolicies } from "../types/index";
-import type { HelperColumns } from "./columns";
+import { HelperColumns } from "./columns";
 declare type CallbackColumns = CallbackTable<TableColumns, HelperColumns & {
     schema: string;
     pgm: MigrationBuilder;
@@ -9,7 +9,7 @@ declare type CallbackIndexes = CallbackTable<TableIndexes | TableIndexes[]>;
 declare type CallbackConstrains = CallbackTable<TableConstrains | TableConstrains[]>;
 declare type CallbackTriggers = CallbackTable<TableTrigges | TableTrigges[]>;
 declare type CallbackPolicies = CallbackTable<TablePolicies | TablePolicies[]>;
-export interface TableObject<D extends Record<string, any[]> = Record<string, any[]>> {
+export interface TableObject<D extends Record<string, any> = Record<string, any>> {
     name: string;
     columns?: ColumnDefinitions | CallbackColumns;
     constrains?: TableConstrains | TableConstrains[] | CallbackConstrains;
@@ -43,7 +43,11 @@ export interface TableState {
 }
 export declare const defineTable: <D extends Record<string, any[]>>(options: TableObject<D>) => {
     _name: string;
+    _state: TableState;
     _data: D | undefined;
+    _queryData: {
+        insert: Record<keyof D, string>;
+    };
     _reference: (key?: string) => ColumnDefinition;
     columns: (columns: TableColumns | CallbackColumns) => any;
     constrains: (constrains: TableObject<any>['constrains']) => any;

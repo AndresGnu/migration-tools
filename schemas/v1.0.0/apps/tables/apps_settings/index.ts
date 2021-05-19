@@ -7,4 +7,4 @@ const table = defineTable({
   columns,
 });
 
-export default table;
+export default () => table;

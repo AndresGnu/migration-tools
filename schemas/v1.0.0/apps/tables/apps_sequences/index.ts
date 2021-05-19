@@ -14,4 +14,4 @@ const table = defineTable({
   },
 });
 
-export default table;
+export default () => table;

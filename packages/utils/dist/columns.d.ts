@@ -1,4 +1,4 @@
-import { MigrationBuilder, ColumnDefinitions, ColumnDefinition } from 'node-pg-migrate';
+import { MigrationBuilder, ColumnDefinition } from 'node-pg-migrate';
 interface CodeNameOptions {
     codePk?: boolean;
     lengthCode?: number;
@@ -15,11 +15,19 @@ export declare const useHelperColumns: (pgm: MigrationBuilder) => {
         ManyToMany: (name: string) => string;
         Polymorphic: (tables: string[]) => string;
     };
+    $table: {
+        _columns: Record<string, ColumnDefinition>;
+        timestamp: () => void;
+        codeName: (params_0: CodeNameOptions) => void;
+        reference: (name: string, table: {
+            _reference: () => any;
+        } & Record<string, any>, options: Omit<ColumnDefinition, 'type'>) => void;
+    };
     $columns: {
-        codeName: ({ lengthCode, codePk, isNullName, }: CodeNameOptions) => ColumnDefinitions;
+        codeName: ({ lengthCode, codePk, isNullName, }: CodeNameOptions) => Record<string, ColumnDefinition>;
         idBigSerial: () => ColumnDefinition;
         idSerial: () => ColumnDefinition;
-        timestamp: (isDefault?: boolean) => ColumnDefinition;
+        timestamp: (nowDefault?: boolean) => ColumnDefinition;
     };
 };
 export declare type UseHelperColumns = typeof useHelperColumns;

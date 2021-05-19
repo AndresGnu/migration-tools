@@ -106,9 +106,10 @@ const useColumns = (tableName, _columns) => {
             schema: tableName.schema,
             pgm,
         };
-        const columns = _columns.reduce((prev, current) => {
+        const columns = R.flatten(_columns).reduce((prev, current) => {
             return prev.concat(current(contextColumns));
         }, []);
+        columns.push({ columns: contextColumns.$table._columns });
         return columns;
     };
     return {
@@ -117,14 +118,18 @@ const useColumns = (tableName, _columns) => {
         up: (pgm) => {
             const columns = getColumns(pgm);
             columns.forEach((column) => {
-                pgm.addColumns(tableName, _parseColumns(column.columns), column.options);
+                if (Object.keys(column.columns).length) {
+                    pgm.addColumns(tableName, _parseColumns(column.columns), column.options);
+                }
             });
         },
         down: (pgm) => {
             const columns = getColumns(pgm);
             columns.forEach((column) => {
                 const keys = Object.keys(column.columns);
-                pgm.dropColumns(tableName, keys, column.dropOptions);
+                if (keys.length) {
+                    pgm.dropColumns(tableName, keys, column.dropOptions);
+                }
             });
         },
     };
@@ -175,6 +180,7 @@ const useTable = (options, state) => {
             table(pgm).up();
             state.actions[state.index].forEach((action) => {
                 if (action.type === 'columns') {
+                    // console.log(action);
                     useColumns(tableName, [action.method]).up(pgm);
                 }
                 call(pgm, action, 'up');
@@ -208,6 +214,8 @@ const defineTable = (options) => {
             : (() => ({ columns: options.columns })),
     };
     const assignAction = (type, v) => {
+        if (type === 'columns')
+            console.log(v);
         if (!v) {
             return void 0;
         }
@@ -229,18 +237,36 @@ const defineTable = (options) => {
     assignAction('constrain', options.constrains);
     assignAction('trigger', options.triggers);
     assignAction('policy', options.policies);
+    const insertQuery = (data) => {
+        //
+        const client = knex_1.default({
+            client: 'pg',
+        });
+        const queryInsert = client(state.name)
+            .withSchema(state.schema)
+            .insert(data)
+            .toQuery();
+        return queryInsert;
+    };
     const methods = {
         _name,
+        _state: state,
         _data: options.data,
+        _queryData: {
+            insert: R.mapObjIndexed((v) => {
+                return insertQuery(v);
+            }, options.data || {}),
+        },
         _reference: (key = 'id') => {
             //
-            const ctx = columns_1.useHelperColumns({ fun: () => '' });
+            const ctx = columns_1.useHelperColumns({ func: () => '' });
             const tableColumns = tableInit.columns({
                 ...ctx,
                 pgm: {},
                 schema: state.schema,
             });
             const columns = tableColumns.columns;
+            // columns = { ...columns, ...ctx.$table._columns };
             const type = columns[key] ? columns[key].type : columns['code'].type;
             return {
                 type: type === node_pg_migrate_1.PgType.BIGSERIAL
@@ -282,16 +308,11 @@ const defineTable = (options) => {
             const table = useTable(tableInit, state);
             table.up(pgm);
             if (options.data?.default) {
-                const client = knex_1.default({
-                    client: 'pg',
-                });
-                const queryInsert = client(state.name)
-                    .withSchema(state.schema)
-                    .insert(options.data.default)
-                    .toQuery();
-                pgm.sql(queryInsert);
+                pgm.sql(insertQuery(options.data.default));
             }
+            // console.log('index', state.index);
             state.index += 1;
+            // console.log('index', state.index);
         },
         $down: (pgm) => {
             const table = useTable(tableInit, state);
@@ -310,3 +331,4 @@ const defineTable = (options) => {
     return methods;
 };
 exports.defineTable = defineTable;
+// export type ReturnTable = ReturnType<DefineTable>;

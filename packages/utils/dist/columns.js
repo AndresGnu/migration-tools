@@ -5,6 +5,7 @@ const node_pg_migrate_1 = require("node-pg-migrate");
 const helpers_1 = require("./helpers/index");
 // export
 const useHelperColumns = (pgm) => {
+    // console.log(pgm);
     // Types
     const character = (number) => `${node_pg_migrate_1.PgType.CHARACTER_VARYING}${number ? '(' + number + ')' : ''}`;
     const numeric = (presicion, scale) => `${node_pg_migrate_1.PgType.NUMERIC}${presicion ? `(${presicion} ${scale ? ',' + scale : ''})` : ''}`;
@@ -39,15 +40,15 @@ const useHelperColumns = (pgm) => {
             primaryKey: true,
         };
     };
-    const timestamp = (isDefault = false) => {
+    const timestamp = (nowDefault = true) => {
         const object = {
             type: node_pg_migrate_1.PgType.TIMESTAMP_WITH_TIME_ZONE,
-            default: pgm.func('NOW()'),
         };
-        if (!isDefault) {
+        if (nowDefault) {
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             //@ts-ignore
-            delete object.default;
+            object.default = pgm.func('NOW()');
+            // delete object.default;
         }
         return object;
     };
@@ -62,9 +63,32 @@ const useHelperColumns = (pgm) => {
             return `@isPolymorphic\n${tp}`;
         },
     };
+    const table = () => {
+        //
+        const _columns = {};
+        return {
+            _columns,
+            timestamp: () => {
+                _columns.created_at = timestamp();
+                _columns.updated_at = timestamp(false);
+                _columns.deleted_at = timestamp(false);
+            },
+            codeName: (...params) => {
+                const c = codeName(...params);
+                _columns.code = c.code;
+                _columns.name = c.name;
+                // _columns = { ..._columns, ... };
+            },
+            reference: (name, table, options) => {
+                _columns[name] = { ...table._reference(), ...options };
+                //
+            },
+        };
+    };
     return {
         $types: { character, numeric },
         $comments,
+        $table: table(),
         $columns: {
             codeName,
             idBigSerial,

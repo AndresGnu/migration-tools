@@ -8,7 +8,7 @@ const _: TableObject['columns'] = ({ $types, $columns, pgm }) => {
   const primitives: ColumnDefinitions = {
     id: $columns.idBigSerial(),
     table_id: {
-      ...tables._reference(),
+      ...tables()._reference(),
       notNull: true,
     },
     action: {

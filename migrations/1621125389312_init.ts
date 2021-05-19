@@ -33,23 +33,29 @@ Public.type(enum_crud);
 Public.type(enum_way_to_pay);
 Public.type(enum_sign);
 Public.function(concat_full_text_search);
-Public.table(tables);
+Public.table(tables());
 
 const Apps = appsSchema();
-Apps.table(apps_permissions);
-Apps.table(apps_settings);
-Apps.table(apps_sequences);
+Apps.table(apps_permissions());
+Apps.table(apps_settings());
+Apps.table(apps_sequences());
 
 const Codes = codesSchema();
-Codes.table(bk_banks);
-// bk_banks._data.
-Codes.table(bk_cost_centers);
-Codes.table(bk_movement_documents);
-Codes.table(bk_movement_types);
-Codes.table(bk_origins);
+Codes.table(bk_banks());
+Codes.table(bk_cost_centers());
+Codes.table(bk_movement_documents());
+Codes.table(bk_movement_types());
+Codes.table(bk_origins());
 
 const Banks = banksSchema();
-Banks.table(bk_accounts);
+
+Banks.table(
+  bk_accounts().columns({
+    columns: { d: { type: 'Integer' } },
+  }),
+);
+
+// bk_accounts._queryData.insert.default
 
 // ? Lista de llamadas
 const calls = [Public, Apps, Codes, Banks];

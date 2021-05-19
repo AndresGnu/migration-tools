@@ -5,6 +5,7 @@ import {
   ColumnDefinition,
 } from 'node-pg-migrate';
 import { parseTables } from './helpers';
+import { DefineTable } from './tables';
 // Columns
 interface CodeNameOptions {
   codePk?: boolean;
@@ -14,6 +15,8 @@ interface CodeNameOptions {
 
 // export
 export const useHelperColumns = (pgm: MigrationBuilder) => {
+  // console.log(pgm);
+
   // Types
   const character = (number?: number) =>
     `${PgType.CHARACTER_VARYING}${number ? '(' + number + ')' : ''}`;
@@ -26,7 +29,7 @@ export const useHelperColumns = (pgm: MigrationBuilder) => {
     lengthCode,
     codePk,
     isNullName,
-  }: CodeNameOptions): ColumnDefinitions => {
+  }: CodeNameOptions): Record<string, ColumnDefinition> => {
     return {
       code: codePk
         ? {
@@ -58,15 +61,16 @@ export const useHelperColumns = (pgm: MigrationBuilder) => {
     };
   };
 
-  const timestamp = (isDefault = false): ColumnDefinition => {
-    const object = {
+  const timestamp = (nowDefault = true): ColumnDefinition => {
+    const object: ColumnDefinition = {
       type: PgType.TIMESTAMP_WITH_TIME_ZONE,
-      default: pgm.func('NOW()'),
     };
-    if (!isDefault) {
+    if (nowDefault) {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       //@ts-ignore
-      delete object.default;
+      object.default = pgm.func('NOW()');
+
+      // delete object.default;
     }
     return object;
   };
@@ -83,9 +87,38 @@ export const useHelperColumns = (pgm: MigrationBuilder) => {
     },
   };
 
+  const table = () => {
+    //
+    const _columns: Record<string, ColumnDefinition> = {};
+
+    return {
+      _columns,
+      timestamp: () => {
+        _columns.created_at = timestamp();
+        _columns.updated_at = timestamp(false);
+        _columns.deleted_at = timestamp(false);
+      },
+      codeName: (...params: Parameters<typeof codeName>) => {
+        const c = codeName(...params);
+        _columns.code = c.code;
+        _columns.name = c.name;
+        // _columns = { ..._columns, ... };
+      },
+      reference: (
+        name: string,
+        table: { _reference: () => any } & Record<string, any>,
+        options: Omit<ColumnDefinition, 'type'>,
+      ) => {
+        _columns[name] = { ...table._reference(), ...options };
+        //
+      },
+    };
+  };
+
   return {
     $types: { character, numeric },
     $comments,
+    $table: table(),
     $columns: {
       codeName,
       idBigSerial,

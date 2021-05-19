@@ -3,10 +3,9 @@ import { ColumnDefinitions } from 'node-pg-migrate';
 import { concat_full_text_search } from '../../../public/functions';
 import { bk_cost_centers } from '../../../codes/tables';
 
-const _: TableObject['columns'] = ({ $types, $columns, $comments }) => {
+const _: TableObject['columns'] = ({ $types, $columns, $comments, $table }) => {
   const primitives: ColumnDefinitions = {
     id: $columns.idBigSerial(),
-    ...$columns.codeName({ lengthCode: 5 }),
     number: {
       type: $types.character(60),
     },
@@ -15,25 +14,19 @@ const _: TableObject['columns'] = ({ $types, $columns, $comments }) => {
       'name',
       'number',
     ),
-
-    // full_text:
-  };
-  const references: ColumnDefinitions = {
-    cost_center_id: {
-      ...bk_cost_centers._reference(),
-      referencesConstraintComment: [
-        $comments.OmitManyToMany(),
-        $comments.ForeignFieldName('accounts'),
-      ].join('\n'),
-
-      // referencesConstraintName
-    },
   };
 
+  $table.reference('cost_center_id', bk_cost_centers(), {
+    referencesConstraintComment: [
+      $comments.OmitManyToMany(),
+      $comments.ForeignFieldName('accounts'),
+    ].join('\n'),
+  });
+  $table.codeName({ lengthCode: 5 });
+  $table.timestamp();
   return {
     columns: {
       ...primitives,
-      ...references,
     },
   };
 };

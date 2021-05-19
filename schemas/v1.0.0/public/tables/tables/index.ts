@@ -16,4 +16,4 @@ const table = defineTable({
 
 table.schema('public');
 
-export default table;
+export default () => table;

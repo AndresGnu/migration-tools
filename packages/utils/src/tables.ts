@@ -14,9 +14,8 @@ import {
   TableTrigges,
   TablePolicies,
 } from 'types';
-import { useHelperColumns } from './columns';
+import { useHelperColumns, HelperColumns } from './columns';
 import * as R from 'ramda';
-import type { HelperColumns } from './columns';
 import knex from 'knex';
 
 type CallbackColumns = CallbackTable<
@@ -29,7 +28,7 @@ type CallbackTriggers = CallbackTable<TableTrigges | TableTrigges[]>;
 type CallbackPolicies = CallbackTable<TablePolicies | TablePolicies[]>;
 
 export interface TableObject<
-  D extends Record<string, any[]> = Record<string, any[]>,
+  D extends Record<string, any> = Record<string, any>,
 > {
   name: string;
   columns?: ColumnDefinitions | CallbackColumns;
@@ -164,9 +163,12 @@ const useColumns = (tableName: Name, _columns: CallbackColumns[]) => {
       schema: (tableName as any).schema,
       pgm,
     };
-    const columns = _columns.reduce((prev, current) => {
+    const columns = R.flatten(_columns).reduce((prev, current) => {
       return prev.concat(current(contextColumns));
     }, [] as TableColumns[]);
+
+    columns.push({ columns: contextColumns.$table._columns });
+
     return columns;
   };
   return {
@@ -174,19 +176,24 @@ const useColumns = (tableName: Name, _columns: CallbackColumns[]) => {
     _getColumns: getColumns,
     up: (pgm: MigrationBuilder) => {
       const columns = getColumns(pgm);
+
       columns.forEach((column) => {
-        pgm.addColumns(
-          tableName,
-          _parseColumns(column.columns),
-          column.options,
-        );
+        if (Object.keys(column.columns).length) {
+          pgm.addColumns(
+            tableName,
+            _parseColumns(column.columns),
+            column.options,
+          );
+        }
       });
     },
     down: (pgm: MigrationBuilder) => {
       const columns = getColumns(pgm);
       columns.forEach((column) => {
         const keys = Object.keys(column.columns);
-        pgm.dropColumns(tableName, keys, column.dropOptions);
+        if (keys.length) {
+          pgm.dropColumns(tableName, keys, column.dropOptions);
+        }
       });
     },
   };
@@ -245,6 +252,8 @@ const useTable = (options: TableInternalObject, state: TableState) => {
       table(pgm).up();
       state.actions[state.index].forEach((action) => {
         if (action.type === 'columns') {
+          // console.log(action);
+
           useColumns(tableName, [action.method]).up(pgm);
         }
         call(pgm, action, 'up');
@@ -286,6 +295,8 @@ export const defineTable = <D extends Record<string, any[]>>(
     type: 'columns' | 'index' | 'constrain' | 'trigger' | 'policy',
     v: any,
   ) => {
+    if (type === 'columns') console.log(v);
+
     if (!v) {
       return void 0;
     }
@@ -307,18 +318,36 @@ export const defineTable = <D extends Record<string, any[]>>(
   assignAction('trigger', options.triggers);
   assignAction('policy', options.policies);
 
+  const insertQuery = (data: any) => {
+    //
+    const client = knex({
+      client: 'pg',
+    });
+    const queryInsert = client(state.name)
+      .withSchema(state.schema)
+      .insert(data)
+      .toQuery();
+    return queryInsert;
+  };
   const methods = {
     _name,
+    _state: state,
     _data: options.data,
+    _queryData: {
+      insert: R.mapObjIndexed((v) => {
+        return insertQuery(v);
+      }, options.data || {}) as Record<keyof D, string>,
+    },
     _reference: (key = 'id'): ColumnDefinition => {
       //
-      const ctx = useHelperColumns({ fun: () => '' } as any);
+      const ctx = useHelperColumns({ func: () => '' } as any);
       const tableColumns = tableInit.columns({
         ...ctx,
         pgm: {} as any,
         schema: state.schema,
       });
       const columns = tableColumns.columns as Record<string, ColumnDefinition>;
+      // columns = { ...columns, ...ctx.$table._columns };
       const type = columns[key] ? columns[key].type : columns['code'].type;
       return {
         type:
@@ -362,16 +391,12 @@ export const defineTable = <D extends Record<string, any[]>>(
 
       table.up(pgm);
       if (options.data?.default) {
-        const client = knex({
-          client: 'pg',
-        });
-        const queryInsert = client(state.name)
-          .withSchema(state.schema)
-          .insert(options.data.default)
-          .toQuery();
-        pgm.sql(queryInsert);
+        pgm.sql(insertQuery(options.data.default));
       }
+      // console.log('index', state.index);
+
       state.index += 1;
+      // console.log('index', state.index);
     },
     $down: (pgm: MigrationBuilder) => {
       const table = useTable(tableInit, state);
@@ -392,3 +417,4 @@ export const defineTable = <D extends Record<string, any[]>>(
 };
 
 export type DefineTable = typeof defineTable;
+// export type ReturnTable = ReturnType<DefineTable>;

@@ -1,15 +1,12 @@
 import { TableObject } from '@redware/migration-utils';
 import { ColumnDefinitions } from 'node-pg-migrate';
 
-const _: TableObject['columns'] = ({ $columns }) => {
-  const primitives: ColumnDefinitions = {
-    ...$columns.codeName({ codePk: true, lengthCode: 3 }),
-  };
+const _: TableObject['columns'] = ({ $table }) => {
+  $table.codeName({ codePk: true, lengthCode: 3 });
+  $table.timestamp();
 
   return {
-    columns: {
-      ...primitives,
-    },
+    columns: {},
   };
 };
 export default _;
