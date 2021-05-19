@@ -18,11 +18,15 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.defineTable = void 0;
 const node_pg_migrate_1 = require("node-pg-migrate");
 const columns_1 = require("./columns");
 const R = __importStar(require("ramda"));
+const knex_1 = __importDefault(require("knex"));
 //*******Methors******* */
 const getFlatList = (pgm, list) => {
     //
@@ -175,6 +179,7 @@ const useTable = (options, state) => {
                 }
                 call(pgm, action, 'up');
             });
+            // if(options.)
         },
         down: (pgm) => {
             state.actions[state.index].reverse().forEach((action) => {
@@ -226,6 +231,7 @@ const defineTable = (options) => {
     assignAction('policy', options.policies);
     const methods = {
         _name,
+        _data: options.data,
         _reference: (key = 'id') => {
             //
             const ctx = columns_1.useHelperColumns({ fun: () => '' });
@@ -275,6 +281,16 @@ const defineTable = (options) => {
         $up: (pgm) => {
             const table = useTable(tableInit, state);
             table.up(pgm);
+            if (options.data?.default) {
+                const client = knex_1.default({
+                    client: 'pg',
+                });
+                const queryInsert = client(state.name)
+                    .withSchema(state.schema)
+                    .insert(options.data.default)
+                    .toQuery();
+                pgm.sql(queryInsert);
+            }
             state.index += 1;
         },
         $down: (pgm) => {

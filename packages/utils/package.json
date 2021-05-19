@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "node-pg-migrate": "^5.9.0",
+    "knex": "^0.95.6",
     "pluralize": "^8.0.0",
     "ramda": "^0.27.1"
   },

@@ -17,6 +17,7 @@ import {
 import { useHelperColumns } from './columns';
 import * as R from 'ramda';
 import type { HelperColumns } from './columns';
+import knex from 'knex';
 
 type CallbackColumns = CallbackTable<
   TableColumns,
@@ -27,13 +28,16 @@ type CallbackConstrains = CallbackTable<TableConstrains | TableConstrains[]>;
 type CallbackTriggers = CallbackTable<TableTrigges | TableTrigges[]>;
 type CallbackPolicies = CallbackTable<TablePolicies | TablePolicies[]>;
 
-export interface TableObject {
+export interface TableObject<
+  D extends Record<string, any[]> = Record<string, any[]>,
+> {
   name: string;
   columns?: ColumnDefinitions | CallbackColumns;
   constrains?: TableConstrains | TableConstrains[] | CallbackConstrains;
   indexes?: TableIndexes | TableIndexes[] | CallbackIndexes;
   policies?: TablePolicies | TablePolicies[] | CallbackPolicies;
   triggers?: TableTrigges | TableTrigges[] | CallbackTriggers;
+  data?: D;
 }
 
 interface TableInternalObject {
@@ -245,6 +249,7 @@ const useTable = (options: TableInternalObject, state: TableState) => {
         }
         call(pgm, action, 'up');
       });
+      // if(options.)
     },
     down: (pgm: MigrationBuilder) => {
       state.actions[state.index].reverse().forEach((action) => {
@@ -258,7 +263,9 @@ const useTable = (options: TableInternalObject, state: TableState) => {
   };
 };
 
-export const defineTable = (options: TableObject) => {
+export const defineTable = <D extends Record<string, any[]>>(
+  options: TableObject<D>,
+) => {
   const _name = options.name;
   const state: TableState = {
     name: _name,
@@ -302,6 +309,7 @@ export const defineTable = (options: TableObject) => {
 
   const methods = {
     _name,
+    _data: options.data,
     _reference: (key = 'id'): ColumnDefinition => {
       //
       const ctx = useHelperColumns({ fun: () => '' } as any);
@@ -330,19 +338,19 @@ export const defineTable = (options: TableObject) => {
       assignAction('columns', columns);
       return methods;
     },
-    constrains: (constrains: TableObject['constrains']) => {
+    constrains: (constrains: TableObject<any>['constrains']) => {
       assignAction('constrain', constrains);
       return methods;
     },
-    indexes: (indexes: TableObject['indexes']) => {
+    indexes: (indexes: TableObject<any>['indexes']) => {
       assignAction('index', indexes);
       return methods;
     },
-    triggers: (triggers: TableObject['triggers']) => {
+    triggers: (triggers: TableObject<any>['triggers']) => {
       assignAction('trigger', triggers);
       return methods;
     },
-    policies: (policies: TableObject['policies']) => {
+    policies: (policies: TableObject<any>['policies']) => {
       assignAction('policy', policies);
       return methods;
     },
@@ -353,6 +361,16 @@ export const defineTable = (options: TableObject) => {
       const table = useTable(tableInit, state);
 
       table.up(pgm);
+      if (options.data?.default) {
+        const client = knex({
+          client: 'pg',
+        });
+        const queryInsert = client(state.name)
+          .withSchema(state.schema)
+          .insert(options.data.default)
+          .toQuery();
+        pgm.sql(queryInsert);
+      }
       state.index += 1;
     },
     $down: (pgm: MigrationBuilder) => {

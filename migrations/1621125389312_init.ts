@@ -42,6 +42,7 @@ Apps.table(apps_sequences);
 
 const Codes = codesSchema();
 Codes.table(bk_banks);
+// bk_banks._data.
 Codes.table(bk_cost_centers);
 Codes.table(bk_movement_documents);
 Codes.table(bk_movement_types);

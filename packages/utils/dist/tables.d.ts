@@ -9,13 +9,14 @@ declare type CallbackIndexes = CallbackTable<TableIndexes | TableIndexes[]>;
 declare type CallbackConstrains = CallbackTable<TableConstrains | TableConstrains[]>;
 declare type CallbackTriggers = CallbackTable<TableTrigges | TableTrigges[]>;
 declare type CallbackPolicies = CallbackTable<TablePolicies | TablePolicies[]>;
-export interface TableObject {
+export interface TableObject<D extends Record<string, any[]> = Record<string, any[]>> {
     name: string;
     columns?: ColumnDefinitions | CallbackColumns;
     constrains?: TableConstrains | TableConstrains[] | CallbackConstrains;
     indexes?: TableIndexes | TableIndexes[] | CallbackIndexes;
     policies?: TablePolicies | TablePolicies[] | CallbackPolicies;
     triggers?: TableTrigges | TableTrigges[] | CallbackTriggers;
+    data?: D;
 }
 declare type Actions = {
     type: 'columns';
@@ -40,14 +41,15 @@ export interface TableState {
     index: number;
     options: Partial<TableOptions>;
 }
-export declare const defineTable: (options: TableObject) => {
+export declare const defineTable: <D extends Record<string, any[]>>(options: TableObject<D>) => {
     _name: string;
+    _data: D | undefined;
     _reference: (key?: string) => ColumnDefinition;
     columns: (columns: TableColumns | CallbackColumns) => any;
-    constrains: (constrains: TableObject['constrains']) => any;
-    indexes: (indexes: TableObject['indexes']) => any;
-    triggers: (triggers: TableObject['triggers']) => any;
-    policies: (policies: TableObject['policies']) => any;
+    constrains: (constrains: TableObject<any>['constrains']) => any;
+    indexes: (indexes: TableObject<any>['indexes']) => any;
+    triggers: (triggers: TableObject<any>['triggers']) => any;
+    policies: (policies: TableObject<any>['policies']) => any;
     /**
      * Up table
      */
