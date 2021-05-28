@@ -41,7 +41,7 @@ export interface TableState {
     index: number;
     options: Partial<TableOptions>;
 }
-export declare const defineTable: <D extends Record<string, any[]>>(options: TableObject<D>) => {
+export interface ReturnTable<D> {
     _name: string;
     _state: TableState;
     _data: D | undefined;
@@ -49,18 +49,19 @@ export declare const defineTable: <D extends Record<string, any[]>>(options: Tab
         insert: Record<keyof D, string>;
     };
     _reference: (key?: string) => ColumnDefinition;
-    columns: (columns: TableColumns | CallbackColumns) => any;
-    constrains: (constrains: TableObject<any>['constrains']) => any;
+    columns: (columns: TableColumns | CallbackColumns) => ReturnTable<D>;
+    constrains: (constrains: TableObject<any>['constrains']) => ReturnTable<D>;
     indexes: (indexes: TableObject<any>['indexes']) => any;
-    triggers: (triggers: TableObject<any>['triggers']) => any;
-    policies: (policies: TableObject<any>['policies']) => any;
+    triggers: (triggers: TableObject<any>['triggers']) => ReturnTable<D>;
+    policies: (policies: TableObject<any>['policies']) => ReturnTable<D>;
     /**
      * Up table
      */
     $up: (pgm: MigrationBuilder) => void;
     $down: (pgm: MigrationBuilder) => void;
-    options: (tableOptions: Partial<TableOptions>) => any;
-    schema: (nameSchema: string) => any;
-};
-export declare type DefineTable = typeof defineTable;
+    options: (tableOptions: Partial<TableOptions>) => ReturnTable<D>;
+    schema: (nameSchema: string) => ReturnTable<D>;
+}
+export declare type DefineTable = <D extends Record<string, any>>(options: TableObject<D>) => ReturnTable<D>;
+export declare const defineTable: DefineTable;
 export {};

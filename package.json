@@ -3,9 +3,7 @@
   "private": true,
   "workspaces": [
     "./packages/*",
-    "./languages",
-    "./extensions",
-    "./schemas",
+    "./database/*",
     "./@types"
   ],
   "scripts": {

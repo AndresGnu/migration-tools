@@ -272,9 +272,32 @@ const useTable = (options: TableInternalObject, state: TableState) => {
   };
 };
 
-export const defineTable = <D extends Record<string, any[]>>(
+export interface ReturnTable<D> {
+  _name: string;
+  _state: TableState;
+  _data: D | undefined;
+  _queryData: {
+    insert: Record<keyof D, string>;
+  };
+  _reference: (key?: string) => ColumnDefinition;
+  columns: (columns: TableColumns | CallbackColumns) => ReturnTable<D>;
+  constrains: (constrains: TableObject<any>['constrains']) => ReturnTable<D>;
+  indexes: (indexes: TableObject<any>['indexes']) => any;
+  triggers: (triggers: TableObject<any>['triggers']) => ReturnTable<D>;
+  policies: (policies: TableObject<any>['policies']) => ReturnTable<D>;
+  /**
+   * Up table
+   */
+  $up: (pgm: MigrationBuilder) => void;
+  $down: (pgm: MigrationBuilder) => void;
+  options: (tableOptions: Partial<TableOptions>) => ReturnTable<D>;
+  schema: (nameSchema: string) => ReturnTable<D>;
+}
+export type DefineTable = <D extends Record<string, any>>(
   options: TableObject<D>,
-) => {
+) => ReturnTable<D>;
+
+export const defineTable: DefineTable = (options) => {
   const _name = options.name;
   const state: TableState = {
     name: _name,
@@ -336,7 +359,7 @@ export const defineTable = <D extends Record<string, any[]>>(
     _queryData: {
       insert: R.mapObjIndexed((v) => {
         return insertQuery(v);
-      }, options.data || {}) as Record<keyof D, string>,
+      }, options.data || {}) as any,
     },
     _reference: (key = 'id'): ColumnDefinition => {
       //
@@ -413,8 +436,9 @@ export const defineTable = <D extends Record<string, any[]>>(
       return methods;
     },
   };
+  // type M = typeof methods;
   return methods;
 };
 
-export type DefineTable = typeof defineTable;
+// export type DefineTable = typeof defineTable;
 // export type ReturnTable = ReturnType<DefineTable>;

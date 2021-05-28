@@ -1,5 +1,5 @@
 {
-  "name": "@redware/migrations-cli",
+  "name": "@redware/migration-cli",
   "version": "1.0.0",
   "description": "Cli for migrations",
   "author": "Andres Navarrete",

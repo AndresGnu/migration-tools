@@ -328,7 +328,9 @@ const defineTable = (options) => {
             return methods;
         },
     };
+    // type M = typeof methods;
     return methods;
 };
 exports.defineTable = defineTable;
+// export type DefineTable = typeof defineTable;
 // export type ReturnTable = ReturnType<DefineTable>;
