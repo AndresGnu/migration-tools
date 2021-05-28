@@ -1,6 +1,6 @@
 {
   "name": "@db/languages",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "Utils for plv8",
   "author": "Andres Navarrete",
@@ -21,8 +21,8 @@
     "@types/ramda": "^0.27.40"
   },
   "dependencies": {
+    "@redware/migration-plv8": "^1.0.1",
     "node-pg-migrate": "^5.9.0",
-    "@redware/migration-plv8": "^1.0.0",
     "ramda": "^0.27.1"
   },
   "gitHead": "de80888141a1a22b4f3b67531033b3da6f56e740"

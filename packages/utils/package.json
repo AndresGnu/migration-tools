@@ -1,6 +1,6 @@
 {
   "name": "@redware/migration-utils",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Js utils for node.js",
   "author": "Andres Navarrete",
   "license": "MIT",
@@ -17,12 +17,12 @@
     "prepare": "rm -rf ./dist &&yarn build:lib"
   },
   "devDependencies": {
-    "@types/ramda": "^0.27.40",
-    "@types/pluralize": "^0.0.29"
+    "@types/pluralize": "^0.0.29",
+    "@types/ramda": "^0.27.40"
   },
   "dependencies": {
-    "node-pg-migrate": "^5.9.0",
     "knex": "^0.95.6",
+    "node-pg-migrate": "^5.9.0",
     "pluralize": "^8.0.0",
     "ramda": "^0.27.1"
   },

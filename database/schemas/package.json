@@ -1,7 +1,7 @@
 {
   "name": "@db/schemas",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Base migrations",
   "author": "Andres Navarrete",
   "license": "MIT",
@@ -17,7 +17,6 @@
     "test": "jest",
     "prepare": "yarn build:ts"
   },
-  "devDependencies": {},
   "dependencies": {
     "node-pg-migrate": "^5.9.0"
   },

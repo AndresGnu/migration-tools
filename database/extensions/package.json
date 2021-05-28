@@ -1,6 +1,6 @@
 {
   "name": "@db/extensions",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "Utils for plv8",
   "author": "Andres Navarrete",

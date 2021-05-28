@@ -1,6 +1,6 @@
 {
   "name": "@redware/migration-cli",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Cli for migrations",
   "author": "Andres Navarrete",
   "license": "MIT",
@@ -30,9 +30,9 @@
     "ora": "^5.4.0"
   },
   "devDependencies": {
-    "@types/fs-extra": "^9.0.11",
     "@types/archiver": "^5.1.0",
     "@types/figlet": "^1.5.1",
+    "@types/fs-extra": "^9.0.11",
     "@types/inquirer": "^7.3.1",
     "@types/listr": "^0.14.3"
   },
