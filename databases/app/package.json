@@ -1,5 +1,5 @@
 {
-  "name": "@db/schemas",
+  "name": "@db/app",
   "private": true,
   "version": "1.0.1",
   "description": "Base migrations",
@@ -12,13 +12,11 @@
     "types/"
   ],
   "scripts": {
-    "build:lib": "ttsc -p tsconfig.build.json",
-    "watch": "ttsc -p tsconfig.build.json -w",
-    "test": "jest",
-    "prepare": "yarn build:ts"
+    "test": "jest"
   },
   "dependencies": {
-    "node-pg-migrate": "^5.9.0"
+    "node-pg-migrate": "^5.9.0",
+    "@redware/migration-utils": "^1.0.1"
   },
   "gitHead": "de80888141a1a22b4f3b67531033b3da6f56e740"
 }
