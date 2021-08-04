@@ -7,8 +7,8 @@
     "./@types"
   ],
   "scripts": {
-    "migrate2": "ts-node node_modules/.bin/node-pg-migrate -j ts",
-    "migrate": "esno node_modules/.bin/node-pg-migrate -j ts",
+    "migrate2": "ts-node node_modules/.bin/node-pg-migrate  -j ts",
+    "migrate": "esno node_modules/.bin/node-pg-migrate -m migrations/app -f ./databases/config/default.js -j ts",
     "utils": "yarn workspace @redware/migration-utils",
     "lang": "yarn workspace @db/languages",
     "plv8": "yarn workspace @redware/migration-plv8"
@@ -30,6 +30,8 @@
     "typescript-transform-paths": "^2.2.3"
   },
   "dependencies": {
+    "dotenv": "^10.0.0",
+    "@redware/js-utils": "^3.0.0",
     "esno": "^0.5.0",
     "config": "^3.3.2",
     "node-pg-migrate": "^5.9.0",

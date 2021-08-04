@@ -1360,6 +1360,11 @@
   dependencies:
     "@octokit/openapi-types" "^7.0.0"
 
+"@redware/js-utils@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@redware/js-utils/-/js-utils-3.0.0.tgz#86121618450bcdc53be9aba5174a014cab9c5607"
+  integrity sha512-dzcyWotf+LcBVFvUVNmzQ3M+novbInbnY0Vcx8YFk8VDv0ib4hpgmtBOcT0BZxm1kpEt3kDgoyrsO60fw0voqw==
+
 "@samverschueren/stream-to-observable@^0.3.0":
   version "0.3.1"
   resolved "https://registry.yarnpkg.com/@samverschueren/stream-to-observable/-/stream-to-observable-0.3.1.tgz#a21117b19ee9be70c379ec1877537ef2e1c63301"
@@ -3209,6 +3214,11 @@ dot-prop@^6.0.1:
   integrity sha512-tE7ztYzXHIeyvc7N+hR3oi7FIbf/NIjVP9hmAt3yMXzrQ072/fpjGLx2GxNxGxUl5V73MEqYzioOMoVhGMJ5cA==
   dependencies:
     is-obj "^2.0.0"
+
+dotenv@^10.0.0:
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-10.0.0.tgz#3d4227b8fb95f81096cdd2b66653fb2c7085ba81"
+  integrity sha512-rlBi9d8jpv9Sf1klPjNfFAuWDjKLwTIJJ/VxtoTwIR6hnZxcEOQCZg2oIL3MWBYw5GpUDKOEnND7LXTbIpQ03Q==
 
 download@^6.2.2:
   version "6.2.5"

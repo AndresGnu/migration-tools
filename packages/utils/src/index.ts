@@ -1,6 +1,6 @@
 import path from 'path';
-export { createSchemas } from './schemas';
-export { defineTable, DefineTable, TableObject } from './tables';
+export { createMigration } from './schemas';
+export { defineTable } from './tables';
 export { defineFunction } from './functions';
 export { defineType } from './types';
 

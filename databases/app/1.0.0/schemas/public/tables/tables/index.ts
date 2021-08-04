@@ -2,7 +2,7 @@ import { defineTable } from '@redware/migration-utils';
 import path from 'path';
 // import
 
-const table = defineTable({
+export const table = defineTable({
   name: path.basename(__dirname),
   columns: ({ $types }) => ({
     columns: {
@@ -13,7 +13,5 @@ const table = defineTable({
     },
   }),
 });
-
-table.schema('public');
 
 export default () => table;

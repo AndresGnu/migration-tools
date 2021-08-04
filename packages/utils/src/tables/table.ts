@@ -16,6 +16,7 @@ import {
 } from 'types';
 import { useHelperColumns, HelperColumns } from './columns';
 import * as R from 'ramda';
+import { buildUpDown } from './_helpers';
 import knex from 'knex';
 
 type CallbackColumns = CallbackTable<
@@ -50,52 +51,13 @@ type Actions =
   | { type: 'trigger'; method: CallbackTriggers }
   | { type: 'policy'; method: CallbackPolicies };
 export interface TableState {
+  migration: string;
   name: string;
   schema: string;
-  actions: Actions[][];
-  index: number;
-
+  actions: Record<string, Actions[]>;
+  firstMigration: string;
   options: Partial<TableOptions>;
 }
-
-//*******Methors******* */
-const getFlatList = <R = any>(
-  pgm: MigrationBuilder,
-  list: CallbackTable[],
-): R[] => {
-  //
-  const items = list.reduce((prev, current) => {
-    return R.flatten(prev.concat(current({ pgm })));
-  }, []);
-  return items;
-};
-interface BuildContext<I> {
-  pgm: MigrationBuilder;
-  item: I;
-}
-interface OptionsBuild<Item = unknown> {
-  up: (options: BuildContext<Item>) => void;
-  down: (options: BuildContext<Item>) => void;
-}
-const buildUpDown = <Item = unknown>(
-  _items: CallbackTable[],
-  options: OptionsBuild<Item>,
-) => {
-  return {
-    up: (pgm: MigrationBuilder) => {
-      const items = getFlatList(pgm, _items);
-      items.forEach((item) => {
-        options.up({ item, pgm });
-      });
-    },
-    down: (pgm: MigrationBuilder) => {
-      const items = getFlatList(pgm, _items);
-      items.forEach((item) => {
-        options.down({ item, pgm });
-      });
-    },
-  };
-};
 
 const usePolicies = (tableName: Name, items: CallbackPolicies[]) => {
   return buildUpDown<TablePolicies>(items, {
@@ -199,10 +161,14 @@ const useColumns = (tableName: Name, _columns: CallbackColumns[]) => {
   };
 };
 
-const useTable = (options: TableInternalObject, state: TableState) => {
+const useTable = (
+  options: TableInternalObject,
+  state: TableState,
+  create = true,
+) => {
   const tableName = { name: options.name, schema: state.schema };
 
-  const table = (pgm: MigrationBuilder) => {
+  const createTable = (pgm: MigrationBuilder) => {
     return {
       up: () => {
         const { _parseColumns, _getColumns } = useColumns(tableName, [
@@ -226,48 +192,47 @@ const useTable = (options: TableInternalObject, state: TableState) => {
       },
     };
   };
-  // const columns = useColumns(tableName, state.columns);
-  // const indexes = useIndexes(tableName, state.indexes);
-  // const constrains = useConstraints(tableName, state.constrains);
-  // const trigges = useTriggers(tableName, state.triggers);
-  // const policies = usePolicies(tableName, state.policies);
-  //
-  const call = (
-    pgm: MigrationBuilder,
-    action: Actions,
-    method: 'up' | 'down',
-  ) => {
+
+  const runTableExtensions = (action: Actions) => {
     if (action.type === 'index') {
-      useIndexes(tableName, [action.method])[method](pgm);
+      return useIndexes(tableName, [action.method]);
     } else if (action.type === 'constrain') {
-      useConstraints(tableName, [action.method])[method](pgm);
+      return useConstraints(tableName, [action.method]);
     } else if (action.type === 'trigger') {
-      useTriggers(tableName, [action.method])[method](pgm);
+      return useTriggers(tableName, [action.method]);
     } else if (action.type === 'policy') {
-      usePolicies(tableName, [action.method])[method](pgm);
+      return usePolicies(tableName, [action.method]);
     }
   };
+  const MIGRATION = state.migration;
   return {
     up: (pgm: MigrationBuilder) => {
-      table(pgm).up();
-      state.actions[state.index].forEach((action) => {
+      const run = (action: Actions) => {
         if (action.type === 'columns') {
-          // console.log(action);
-
           useColumns(tableName, [action.method]).up(pgm);
         }
-        call(pgm, action, 'up');
-      });
-      // if(options.)
+        runTableExtensions(action)?.up(pgm);
+      };
+
+      if (create) {
+        createTable(pgm).up();
+        state.actions['init'].forEach(run);
+      }
+
+      state.actions?.[state.migration].forEach(run);
     },
     down: (pgm: MigrationBuilder) => {
-      state.actions[state.index].reverse().forEach((action) => {
+      const run = (action: Actions) => {
         if (action.type === 'columns') {
           useColumns(tableName, [action.method]).down(pgm);
         }
-        call(pgm, action, 'down');
-      });
-      table(pgm).down();
+        runTableExtensions(action)?.down(pgm);
+      };
+      state.actions?.[state.migration].reverse().forEach(run);
+      if (create) {
+        state.actions['init'].reverse().forEach(run);
+        createTable(pgm).down();
+      }
     },
   };
 };
@@ -288,8 +253,11 @@ export interface ReturnTable<D> {
   /**
    * Up table
    */
-  $up: (pgm: MigrationBuilder) => void;
-  $down: (pgm: MigrationBuilder) => void;
+  $migration: (id: string) => ReturnTable<D>;
+  $migrate: {
+    up: (pgm: MigrationBuilder, id: string, create?: boolean) => void;
+    down: (pgm: MigrationBuilder, id: string, create?: boolean) => void;
+  };
   options: (tableOptions: Partial<TableOptions>) => ReturnTable<D>;
   schema: (nameSchema: string) => ReturnTable<D>;
 }
@@ -300,11 +268,12 @@ export type DefineTable = <D extends Record<string, any>>(
 export const defineTable: DefineTable = (options) => {
   const _name = options.name;
   const state: TableState = {
+    migration: 'init',
     name: _name,
     schema: 'public',
-    actions: [[]],
+    actions: { init: [] },
+    firstMigration: '',
     options: {},
-    index: 0,
   };
   const tableInit: TableInternalObject = {
     name: _name,
@@ -324,13 +293,13 @@ export const defineTable: DefineTable = (options) => {
       return void 0;
     }
     if (typeof v === 'function') {
-      state.actions[state.index].push({
+      state.actions[state.migration].push({
         type,
         method: v,
       });
     } else {
       // return () => [v];
-      state.actions[state.index].push({
+      state.actions[state.migration].push({
         type,
         method: () => v,
       });
@@ -409,22 +378,34 @@ export const defineTable: DefineTable = (options) => {
     /**
      * Up table
      */
-    $up: (pgm: MigrationBuilder) => {
-      const table = useTable(tableInit, state);
-
-      table.up(pgm);
-      if (options.data?.default) {
-        pgm.sql(insertQuery(options.data.default));
+    $migration: (_migration: string) => {
+      state.migration = _migration;
+      if (!state.firstMigration) {
+        state.firstMigration = _migration;
       }
-      // console.log('index', state.index);
-
-      state.index += 1;
-      // console.log('index', state.index);
+      if (!state.actions[_migration]) {
+        state.actions[_migration] = [];
+      }
+      return methods;
     },
-    $down: (pgm: MigrationBuilder) => {
-      const table = useTable(tableInit, state);
+    $migrate: {
+      up: (pgm: MigrationBuilder, id: string, create = true) => {
+        state.migration = id;
+        const table = useTable(tableInit, state, create);
 
-      table.down(pgm);
+        // console.log(table);
+
+        table.up(pgm);
+        if (options.data?.default && create) {
+          pgm.sql(insertQuery(options.data.default));
+        }
+      },
+      down: (pgm: MigrationBuilder, id: string, create = true) => {
+        state.migration = id;
+        const table = useTable(tableInit, state, create);
+
+        table.down(pgm);
+      },
     },
     //Extra options
     options: (tableOptions: Partial<TableOptions>) => {
@@ -439,6 +420,3 @@ export const defineTable: DefineTable = (options) => {
   // type M = typeof methods;
   return methods;
 };
-
-// export type DefineTable = typeof defineTable;
-// export type ReturnTable = ReturnType<DefineTable>;

@@ -1,11 +1,5 @@
-import {
-  MigrationBuilder,
-  PgType,
-  ColumnDefinitions,
-  ColumnDefinition,
-} from 'node-pg-migrate';
-import { parseTables } from './helpers';
-import { DefineTable } from './tables';
+import { MigrationBuilder, PgType, ColumnDefinition } from 'node-pg-migrate';
+import { parseTables } from '../helpers';
 // Columns
 interface CodeNameOptions {
   codePk?: boolean;
@@ -13,17 +7,20 @@ interface CodeNameOptions {
   isNullName?: boolean;
 }
 
+const PrimitiveColumns = {
+  character: (number?: number) =>
+    `${PgType.CHARACTER_VARYING}${number ? '(' + number + ')' : ''}`,
+
+  numeric: (presicion?: number, scale?: number) =>
+    `${PgType.NUMERIC}${
+      presicion ? `(${presicion} ${scale ? ',' + scale : ''})` : ''
+    }`,
+};
 // export
 export const useHelperColumns = (pgm: MigrationBuilder) => {
   // console.log(pgm);
 
   // Types
-  const character = (number?: number) =>
-    `${PgType.CHARACTER_VARYING}${number ? '(' + number + ')' : ''}`;
-  const numeric = (presicion?: number, scale?: number) =>
-    `${PgType.NUMERIC}${
-      presicion ? `(${presicion} ${scale ? ',' + scale : ''})` : ''
-    }`;
 
   const codeName = ({
     lengthCode,
@@ -33,16 +30,16 @@ export const useHelperColumns = (pgm: MigrationBuilder) => {
     return {
       code: codePk
         ? {
-            type: character(lengthCode),
+            type: PrimitiveColumns.character(lengthCode),
             primaryKey: true,
           }
         : {
-            type: character(lengthCode),
+            type: PrimitiveColumns.character(lengthCode),
             notNull: true,
             unique: isNullName || true,
           },
       name: {
-        type: character(140),
+        type: PrimitiveColumns.character(140),
         unique: isNullName || true,
       },
     };
@@ -69,8 +66,6 @@ export const useHelperColumns = (pgm: MigrationBuilder) => {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       //@ts-ignore
       object.default = pgm.func('NOW()');
-
-      // delete object.default;
     }
     return object;
   };
@@ -93,6 +88,12 @@ export const useHelperColumns = (pgm: MigrationBuilder) => {
 
     return {
       _columns,
+      pkSerial: (key: string) => {
+        _columns[key] = idSerial();
+      },
+      pkBigSerial: (key: string) => {
+        _columns[key] = idBigSerial();
+      },
       timestamp: () => {
         _columns.created_at = timestamp();
         _columns.updated_at = timestamp(false);
@@ -116,7 +117,10 @@ export const useHelperColumns = (pgm: MigrationBuilder) => {
   };
 
   return {
-    $types: { character, numeric },
+    $types: {
+      character: PrimitiveColumns.character,
+      numeric: PrimitiveColumns.numeric,
+    },
     $comments,
     $table: table(),
     $columns: {

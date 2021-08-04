@@ -6,7 +6,6 @@ import data from './_data';
 const table = defineTable({
   name: path.basename(__dirname),
   columns,
-  data,
 });
 
 export default () => table;
