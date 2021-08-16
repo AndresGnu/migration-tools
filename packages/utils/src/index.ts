@@ -1,4 +1,6 @@
 import path from 'path';
+import { TableObject } from './tables/table';
+
 export { createMigration } from './schemas';
 export { defineTable } from './tables';
 export { defineFunction } from './functions';
@@ -15,3 +17,7 @@ export const getName = (baseName: string) => {
     schema,
   };
 };
+
+export { PgType, ColumnDefinitions, ColumnDefinition } from 'node-pg-migrate';
+
+export type Columns = TableObject['columns'];
