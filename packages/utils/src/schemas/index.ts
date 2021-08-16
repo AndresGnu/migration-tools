@@ -31,6 +31,7 @@ export const createMigration = (id: string) => {
     ) => {
       const { create = true } = options;
       theTable.$migration(state.migration);
+      theTable.schema(nameSchema);
       state.actions[state.migration].push({
         schema: nameSchema,
         type: 'table',
@@ -38,6 +39,9 @@ export const createMigration = (id: string) => {
         options: { create: create },
       });
       return methods(nameSchema);
+    },
+    generic: (method: any) => {
+      state.actions[state.migration].push({ type: 'generic', method });
     },
     type: (theType: ReturnType<DefineType>) => {
       state.actions[state.migration].push({

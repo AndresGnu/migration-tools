@@ -204,7 +204,6 @@ const useTable = (
       return usePolicies(tableName, [action.method]);
     }
   };
-  const MIGRATION = state.migration;
   return {
     up: (pgm: MigrationBuilder) => {
       const run = (action: Actions) => {
@@ -250,6 +249,13 @@ export interface ReturnTable<D> {
   indexes: (indexes: TableObject<any>['indexes']) => any;
   triggers: (triggers: TableObject<any>['triggers']) => ReturnTable<D>;
   policies: (policies: TableObject<any>['policies']) => ReturnTable<D>;
+  build: {
+    columns: (columns: TableColumns | CallbackColumns) => any;
+    constrains: (constrains: TableObject<any>['constrains']) => any;
+    indexes: (indexes: TableObject<any>['indexes']) => any;
+    triggers: (triggers: TableObject<any>['triggers']) => any;
+    policies: (policies: TableObject<any>['policies']) => any;
+  };
   /**
    * Up table
    */
@@ -286,19 +292,20 @@ export const defineTable: DefineTable = (options) => {
   const assignAction = (
     type: 'columns' | 'index' | 'constrain' | 'trigger' | 'policy',
     v: any,
-  ) => {
-    if (type === 'columns') console.log(v);
-
+    _return = false,
+  ): any => {
     if (!v) {
       return void 0;
     }
     if (typeof v === 'function') {
+      if (_return) return { type, method: v };
       state.actions[state.migration].push({
         type,
         method: v,
       });
     } else {
-      // return () => [v];
+      if (_return) return { type, method: () => v };
+
       state.actions[state.migration].push({
         type,
         method: () => v,
@@ -374,6 +381,33 @@ export const defineTable: DefineTable = (options) => {
     policies: (policies: TableObject<any>['policies']) => {
       assignAction('policy', policies);
       return methods;
+    },
+    build: {
+      columns: (columns: TableColumns | CallbackColumns) => {
+        const data = assignAction('columns', columns, true);
+        const tableName = { name: options.name, schema: state.schema };
+        return useColumns(tableName, [data.method]);
+      },
+      constrains: (constrains: TableObject<any>['constrains']) => {
+        const data = assignAction('columns', constrains, true);
+        const tableName = { name: options.name, schema: state.schema };
+        return useConstraints(tableName, [data.method]);
+      },
+      indexes: (indexes: TableObject<any>['indexes']) => {
+        const data = assignAction('columns', indexes, true);
+        const tableName = { name: options.name, schema: state.schema };
+        return useIndexes(tableName, [data.method]);
+      },
+      triggers: (triggers: TableObject<any>['triggers']) => {
+        const data = assignAction('columns', triggers, true);
+        const tableName = { name: options.name, schema: state.schema };
+        return useTriggers(tableName, [data.method]);
+      },
+      policies: (policies: TableObject<any>['policies']) => {
+        const data = assignAction('columns', policies, true);
+        const tableName = { name: options.name, schema: state.schema };
+        return usePolicies(tableName, [data.method]);
+      },
     },
     /**
      * Up table

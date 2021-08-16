@@ -8,10 +8,9 @@ import * as TTables from './schemas/public/tables';
 
 export default (id: string) => {
   const migration = createMigration(id);
+
   const Public = migration.defineSchema(SchemaPublic);
   Public.table(TTables.tables(id), { create: false });
-
-  //* Lista de llamadas
 
   return {
     up: (pgm: MigrationBuilder) => {

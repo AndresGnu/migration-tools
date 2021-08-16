@@ -17,6 +17,13 @@ export type Actions =
       method: ReturnType<DefineType>;
     }
   | {
+      type: 'generic';
+      method: {
+        up: (pgm: MigrationBuilder) => any;
+        down: (pgm: MigrationBuilder) => any;
+      };
+    }
+  | {
       schema: string;
       type: 'schema';
       // method: ReturnType<any>;
@@ -43,6 +50,8 @@ export const useSchema = (
           action.method.$up(pgm);
         } else if (action.type === 'schema' && schemas[action.schema]) {
           pgm.createSchema(action.schema, { ifNotExists: true });
+        } else if (action.type === 'generic') {
+          action.method.up(pgm);
         }
       });
     },
@@ -63,6 +72,8 @@ export const useSchema = (
           action.schema !== 'public'
         ) {
           pgm.dropSchema(action.schema);
+        } else if (action.type === 'generic') {
+          action.method.down(pgm);
         }
       });
     },

@@ -1,4 +1,4 @@
-import { MigrationBuilder } from 'node-pg-migrate';
+import { MigrationBuilder, PgType } from 'node-pg-migrate';
 import { createMigration } from '@redware/migration-utils';
 import createExtensions from './extensions';
 // * Importaciones
@@ -41,6 +41,13 @@ export default (id: string) => {
   const Banks = migration.defineSchema(SchemaBanks, true);
   Banks.table(TBanks.bk_accounts());
 
+  Public.generic(
+    TTables.tables().build.columns({
+      columns: {
+        g: { type: PgType.BIGINT },
+      },
+    }),
+  );
   //* Lista de llamadas
   // console.log(migration.state.actions);
 
