@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getDefinition = exports.createPlv8 = void 0;
+const path_1 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
 const useExecute = (state) => (sql, args) => {
     if (sql.includes('DELETE')) {
@@ -78,16 +79,16 @@ const createPlv8 = () => {
     };
 };
 exports.createPlv8 = createPlv8;
-const getDefinition = (fileName, name) => {
+const getDefinition = (fileName) => {
     const file = fs_1.default.readFileSync(fileName, 'utf8');
-    const script = /@INIT([^@]+)?@/g;
-    const plv8 = script.exec(file);
+    const re = /@INIT([^@]+)?@/g;
+    const match = re.exec(file);
     // return match[1].trim();
-    if (!plv8)
+    if (!match)
         throw new Error(`Incorrect definition: ${fileName}`);
     return {
-        name,
-        definition: plv8[1].trim(),
+        name: path_1.default.basename(fileName).replace(/(\.js|\.ts)/g, ''),
+        definition: match[1].trim(),
     };
 };
 exports.getDefinition = getDefinition;

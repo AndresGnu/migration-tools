@@ -84,14 +84,14 @@ export const createPlv8 = (): PLV8 => {
   } as any;
 };
 
-export const getDefinition = (fileName: string) => {
+export const getDefinition = (fileName: string, name: string) => {
   const file = fs.readFileSync(fileName, 'utf8');
-  const re = /@INIT([^@]+)?@/g;
-  const match = re.exec(file);
+  const script = /@INIT([^@]+)?@/g;
+  const plv8 = script.exec(file);
   // return match[1].trim();
-  if (!match) throw new Error(`Incorrect definition: ${fileName}`);
+  if (!plv8) throw new Error(`Incorrect definition: ${fileName}`);
   return {
-    name: path.basename(fileName).replace(/(\.js|\.ts)/g, ''),
-    definition: match[1].trim(),
+    name,
+    definition: plv8[1].trim(),
   };
 };
