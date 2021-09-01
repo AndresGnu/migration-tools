@@ -1,6 +1,6 @@
 {
   "name": "@redware/migration-plv8",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Utils for plv8",
   "author": "Andres Navarrete",
   "license": "MIT",
