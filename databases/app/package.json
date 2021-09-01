@@ -1,7 +1,7 @@
 {
   "name": "@db/app",
   "private": true,
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Base migrations",
   "author": "Andres Navarrete",
   "license": "MIT",
@@ -15,7 +15,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@redware/migration-utils": "^2.0.2",
+    "@redware/migration-utils": "^2.0.3",
     "node-pg-migrate": "^5.9.0"
   },
   "gitHead": "de80888141a1a22b4f3b67531033b3da6f56e740"
