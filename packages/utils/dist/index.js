@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getName = exports.defineType = exports.defineFunction = exports.defineTable = exports.createMigration = void 0;
+exports.PgType = exports.getName = exports.defineType = exports.defineFunction = exports.defineTable = exports.createMigration = void 0;
 const path_1 = __importDefault(require("path"));
 var schemas_1 = require("./schemas/index");
 Object.defineProperty(exports, "createMigration", { enumerable: true, get: function () { return schemas_1.createMigration; } });
@@ -25,3 +25,5 @@ const getName = (baseName) => {
     };
 };
 exports.getName = getName;
+var node_pg_migrate_1 = require("node-pg-migrate");
+Object.defineProperty(exports, "PgType", { enumerable: true, get: function () { return node_pg_migrate_1.PgType; } });

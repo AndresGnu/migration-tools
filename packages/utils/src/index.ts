@@ -1,4 +1,4 @@
-import path from 'path';
+import { basename } from 'path';
 import { TableObject } from './tables/table';
 
 export { createMigration } from './schemas';
@@ -6,11 +6,17 @@ export { defineTable } from './tables';
 export { defineFunction } from './functions';
 export { defineType } from './types';
 
+export const useNames = (dirname: string) => {
+  return {
+    folder: basename(dirname),
+  };
+};
+// export const schema
 export const getName = (baseName: string) => {
   //
-  const dir = path.basename(baseName);
-  const file = path.basename(baseName).replace(/(\.js|\.ts)/g, '');
-  const schema = path.basename(baseName.replace(`/table/${dir}`, ''));
+  const dir = basename(baseName);
+  const file = basename(baseName).replace(/(\.js|\.ts)/g, '');
+  const schema = basename(baseName.replace(`/table/${dir}`, ''));
   return {
     dir,
     file,
