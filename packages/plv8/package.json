@@ -11,8 +11,8 @@
     "types/"
   ],
   "scripts": {
-    "build:lib": "ttsc -p tsconfig.build.json",
-    "watch": "ttsc -p tsconfig.build.json -w",
+    "build:lib": "tsc -p tsconfig.build.json",
+    "watch": "tsc -p tsconfig.build.json -w",
     "test": "jest",
     "prepare": "rm -rf ./dist && yarn build:lib"
   },
